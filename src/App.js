@@ -1,24 +1,65 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { NavBar } from "./components/NavBar";
+import { MovieRouter } from "./components/MovieRouter";
+import { Home } from "./components/Home";
+import { Profile } from "./components/Profile";
+import { UserContext, useUser } from "./context/UserContext";
+
+const fetchMe = () => {
+  return {
+    name: "Tiago",
+    age: 19,
+    occupation: "React Dev",
+    isLoggedIn: true,
+  };
+};
+
+const BrowserApp = () => {
+  const {
+    user: { isLoggedIn },
+  } = useUser();
+
+  if (!isLoggedIn) {
+    return <div>Logged out</div>;
+  }
+
+  return (
+    <BrowserRouter>
+      <NavBar />
+      <Switch>
+        <Route path={"/profile"}>
+          <Profile />
+        </Route>
+        <Route path={"/movies"}>
+          <MovieRouter />
+        </Route>
+        <Route path={"/"}>
+          <Home />
+        </Route>
+      </Switch>
+    </BrowserRouter>
+  );
+};
 
 function App() {
+  const [user, setUser] = useState();
+
+  useEffect(() => {
+    const user = fetchMe();
+    setUser(user);
+  }, []);
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <UserContext.Provider value={{ user, setUser }}>
+        <BrowserApp />
+      </UserContext.Provider>
     </div>
   );
 }
